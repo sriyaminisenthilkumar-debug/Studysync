@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-page">
+  <h1>&#128218; Lecture Study Assistant</h1>
+  <p class="muted">Log in or sign up to upload lectures and study your summaries and quizzes.</p>
+
+  <div class="auth-cards">
+    <div class="auth-card">
+      <h2>Log in</h2>
+      <form method="post" action="{{ url_for('login') }}" class="stacked-form">
+        <label>Username
+          <input type="text" name="username" required>
+        </label>
+        <label>Password
+          <input type="password" name="password" required>
+        </label>
+        <button type="submit" class="primary">Log in</button>
+      </form>
+    </div>
+
+    <div class="auth-card">
+      <h2>Sign up</h2>
+      <form method="post" action="{{ url_for('signup') }}" class="stacked-form">
+        <label>Choose a username
+          <input type="text" name="username" required>
+        </label>
+        <label>Choose a password
+          <input type="password" name="password" required minlength="6">
+        </label>
+        <button type="submit" class="primary">Create account</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

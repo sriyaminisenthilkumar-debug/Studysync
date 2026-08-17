@@ -1,0 +1,20 @@
+cd "/Users/vigneshds/Desktop/study sync"
+cat > .gitignore << 'EOF'
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Local database (contains user data)
+data/
+
+# Environment variables / secrets
+.env
+
+# OS / editor junk
+.DS_Store
+.vscode/
+
+# nltk data (downloaded separately, not part of the repo)
+nltk_data/
+EOF

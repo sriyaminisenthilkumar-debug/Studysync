@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard">
+  <aside class="sidebar">
+    <h1>&#128218; Lecture Study Assistant</h1>
+    <div class="user-badge">Logged in as <strong>{{ user.username }}</strong></div>
+    <form method="post" action="{{ url_for('logout') }}">
+      <button type="submit">Log out</button>
+    </form>
+  </aside>
+
+  <main class="main">
+    <h2>Add a lecture recording</h2>
+    <p class="muted">Upload a file, or paste a YouTube / Instagram link.</p>
+
+    <div class="upload-tabs">
+      <details open>
+        <summary>&#128193; Upload file</summary>
+        <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data" class="stacked-form">
+          <label>File ({{ supported_types|join(', ')|upper }})
+            <input type="file" name="file" required>
+          </label>
+          <label>Lecture title (optional)
+            <input type="text" name="title" placeholder="Defaults to file name">
+          </label>
+          <button type="submit" class="primary">Process lecture</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>&#128279; Add link</summary>
+        <p class="muted">Paste a link from: {{ supported_link_hint }}</p>
+        <form method="post" action="{{ url_for('process_link') }}" class="stacked-form">
+          <label>YouTube or Instagram link
+            <input type="url" name="url" placeholder="https://..." required>
+          </label>
+          <label>Lecture title (optional &mdash; defaults to the video title)
+            <input type="text" name="title">
+          </label>
+          <button type="submit" class="primary">Process link</button>
+        </form>
+      </details>
+    </div>
+    <script>
+  // Prevent double-submitting the upload/link forms (which can otherwise
+  // fire two overlapping downloads if the page is clicked twice or
+  // reloaded mid-request).
+  document.querySelectorAll("form").forEach(function (form) {
+    form.addEventListener("submit", function () {
+      var btn = form.querySelector("button[type=submit]");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Processing... this can take a minute";
+      }
+    });
+  });
+</script>
+
+    <hr>
+
+    <div class="tab-switcher">
+      <a href="{{ url_for('dashboard', tab='summaries') }}" class="{{ 'active' if tab == 'summaries' else '' }}">&#128221; Lecture Summaries</a>
+      <a href="{{ url_for('dashboard', tab='quizzes') }}" class="{{ 'active' if tab == 'quizzes' else '' }}">&#129504; Practice Quizzes</a>
+    </div>
+
+    {% if tab == 'summaries' %}
+      {% if not lectures %}
+        <div class="info-box">No lecture summaries yet &mdash; upload a recording above to get started.</div>
+      {% else %}
+        {% for lecture in lectures %}
+          <details class="lecture-card">
+            <summary>&#128196; {{ lecture.title }} &mdash; {{ lecture.created_at[:10] }}</summary>
+            <h4>Summary</h4>
+            <ul>
+              {% for bullet in lecture.summary_bullets %}
+                <li>{{ bullet }}</li>
+              {% endfor %}
+            </ul>
+            <h4>Key terms</h4>
+            <p>{{ lecture.key_terms|join(', ') }}</p>
+            <details>
+              <summary>View full transcript</summary>
+              <p class="transcript">{{ lecture.transcript }}</p>
+            </details>
+          </details>
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      {% if not quizzes %}
+        <div class="info-box">No quizzes yet &mdash; upload a lecture to generate one automatically.</div>
+      {% else %}
+        <form method="get" class="quiz-picker">
+          <input type="hidden" name="tab" value="quizzes">
+          <label>Choose a quiz
+            <select name="quiz" onchange="this.form.submit()">
+              {% for q in quizzes %}
+                <option value="{{ loop.index0 }}" {% if loop.index0 == selected_quiz %}selected{% endif %}>
+                  {{ q.title }} &mdash; {{ q.created_at[:10] }}
+                </option>
+              {% endfor %}
+            </select>
+          </label>
+        </form>
+
+        {% set quiz = quizzes[selected_quiz] %}
+        <p class="muted">{{ quiz.questions|length }} questions</p>
+        {% for q in quiz.questions %}
+          <div class="quiz-question">
+            <p><strong>Q{{ loop.index }}.</strong> {{ q.question }}</p>
+            <details>
+              <summary>Show answer</summary>
+              <p>{{ q.answer }}</p>
+            </details>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
